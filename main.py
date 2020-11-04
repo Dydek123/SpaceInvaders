@@ -17,6 +17,7 @@ white = (255, 255, 255)
 green = (0, 255, 0)
 red = (255, 0, 0)
 black = (0, 0, 0)
+FONT_COLOR = (164, 239, 255)
 
 SHIP_SPEED = 10
 SHIP_SIZE = [50, 22]
@@ -27,8 +28,8 @@ SHIP_LIVES = 3
 ENEMY_SIZE = [40, 40]
 ENEMY_X_SPEED = 5
 ENEMY_Y_SPEED = 5
-GREEN_ENEMY_POINTS = 10
-PINK_ENEMY_POINTS = 20
+GREEN_ENEMY_POINTS = 20
+PINK_ENEMY_POINTS = 10
 
 MISSILE_SIZE = [5, 10]
 MISSILE_SPEED = 10
@@ -140,13 +141,13 @@ def redraw():
     # window.fill(black)
     window.blit(background_img, [0, 0])
 
-    font = pygame.font.SysFont('Time New Roman', 30)
-    text_score = font.render("SCORE: {}".format(str(SCORE)), False, white)
+    font = pygame.font.Font('Fonts/Caudex-Bold.ttf', 30)
+    text_score = font.render("SCORE: {}".format(str(SCORE)), False, FONT_COLOR)
     textRect = text_score.get_rect()
     textRect.center = (750 // 4, 25)
     window.blit(text_score, textRect)
 
-    text_lives = font.render("LIVES: {}".format(str(ship.live)), False, white)
+    text_lives = font.render("LIVES: {}".format(str(ship.live)), False, FONT_COLOR)
     textRect = text_lives.get_rect()
     textRect.center = (750 // 4 * 3, 25)
     window.blit(text_lives, textRect)
@@ -169,7 +170,7 @@ run = True
 
 while run:
 
-    pygame.time.delay(100)
+    pygame.time.delay(50)
 
     for event in pygame.event.get():
 
