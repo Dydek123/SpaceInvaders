@@ -3,9 +3,8 @@ import random
 import pygame
 
 WIDTH, HEIGHT = 750, 860
+ROW, COLUMN = 4, 10
 SHOT_DELAY = 800
-SHOT_TIME = 0
-SCORE = 0
 
 
 class Colors:
@@ -19,7 +18,7 @@ class Colors:
 class Ship(pygame.sprite.Sprite):
     SHIP_SPEED = 10
     SHIP_SIZE = [50, 22]
-    SHIP_X = 325
+    SHIP_X = WIDTH / 2
     SHIP_Y = 800
     SHIP_LIVES = 3
 
@@ -99,147 +98,158 @@ class EnemyMissile(Missile):
         self.MISSILE_SPEED = -self.MISSILE_SPEED
         self.image.fill(Colors.RED)
 
-def redraw():
-    # window.fill(black)
-    window.blit(background_img, [0, 0])
 
-    font = pygame.font.Font('Fonts/Caudex-Bold.ttf', 30)
-    text_score = font.render("SCORE: {}".format(str(SCORE)), False, Colors.FONT_COLOR)
-    text_rect = text_score.get_rect()
-    text_rect.center = (WIDTH // 4, 25)
-    window.blit(text_score, text_rect)
+class Game:
+    score = 0
+    shot_time = 0
 
-    text_lives = font.render("LIVES: {}".format(str(ship.live)), False, Colors.FONT_COLOR)
-    text_rect = text_lives.get_rect()
-    text_rect.center = (WIDTH // 4 * 3, 25)
-    window.blit(text_lives, text_rect)
+    def __init__(self):
+        self.ship = Ship()
+        self.enemy_list = pygame.sprite.Group()
+        self.missile_list = pygame.sprite.Group()
+        self.bomb_list = pygame.sprite.Group()
+        self.create_enemies()
+        self.play()
 
-    ship.draw()
+    def create_enemies(self):
+        for row in range(1, ROW // 2 + 1):
+            for column in range(1, COLUMN + 1):
+                enemy_green = GreenEnemy()
+                enemy_green.rect.x = 80 + (50 * column)
+                enemy_green.rect.y = 25 + (50 * row)
+                self.enemy_list.add(enemy_green)
 
-    enemy_list.update()
-    enemy_list.draw(window)
+                enemy_pink = PinkEnemy()
+                enemy_pink.rect.x = 80 + (50 * column)
+                enemy_pink.rect.y = 125 + (50 * row)
+                self.enemy_list.add(enemy_pink)
 
-    missile_list.update()
-    missile_list.draw(window)
+    def redraw(self):
+        background_img = pygame.image.load('icons/backgroundv2.png')
+        window.blit(background_img, [0, 0])
 
-    bomb_list.update()
-    bomb_list.draw(window)
+        font = pygame.font.Font('Fonts/Caudex-Bold.ttf', 30)
+        text_score = font.render("SCORE: {}".format(str(self.score)), False, Colors.FONT_COLOR)
+        text_rect = text_score.get_rect()
+        text_rect.center = (WIDTH // 4, 25)
+        window.blit(text_score, text_rect)
 
-    pygame.display.update()
+        text_lives = font.render("LIVES: {}".format(str(self.ship.live)), False, Colors.FONT_COLOR)
+        text_rect = text_lives.get_rect()
+        text_rect.center = (WIDTH // 4 * 3, 25)
+        window.blit(text_lives, text_rect)
 
-ship = Ship()
+        self.ship.draw()
 
-enemy_list = pygame.sprite.Group()
-missile_list = pygame.sprite.Group()
-bomb_list = pygame.sprite.Group()
+        self.enemy_list.update()
+        self.enemy_list.draw(window)
 
-for row in range(1, 3):
+        self.missile_list.update()
+        self.missile_list.draw(window)
 
-    for column in range(1, 11):
-        enemy_green = GreenEnemy()
-        enemy_green.rect.x = 80 + (50 * column)
-        enemy_green.rect.y = 25 + (50 * row)
-        enemy_list.add(enemy_green)
+        self.bomb_list.update()
+        self.bomb_list.draw(window)
 
-        enemy_pink = PinkEnemy()
-        enemy_pink.rect.x = 80 + (50 * column)
-        enemy_pink.rect.y = 125 + (50 * row)
-        enemy_list.add(enemy_pink)
-        print(enemy_list)
+        pygame.display.update()
 
-pygame.init()
+    def play(self):
+        run = True
+        while run:
+            pygame.time.delay(50)
 
-window = pygame.display.set_mode((WIDTH, HEIGHT))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
 
-pygame.display.set_caption('Space Invaders')
+            self.move()
+            self.enemy_shot()
 
-programIcon = pygame.image.load('icons/green_alien.png')
-pygame.display.set_icon(programIcon)
+            for missile in self.missile_list:
+                self.check_out_of_bounds(missile)
+                self.check_hit_enemy(missile)
 
-background_img = pygame.image.load('icons/backgroundv2.png')
+            for bomb in self.bomb_list:
+                if bomb.rect.y > HEIGHT+Missile.MISSILE_SIZE[1]:
+                    self.bomb_list.remove(bomb)
 
-run = True
+                self.check_hit_ship(bomb)
 
-while run:
+            run = self.check_end_condition()
 
-    pygame.time.delay(50)
+            self.redraw()
 
-    for event in pygame.event.get():
+    def move(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_LEFT]:
+            if self.ship.rect.x > 0:
+                self.ship.rect.x += -self.ship.SHIP_SPEED
 
-        if event.type == pygame.QUIT:
-            run = False
+        if key[pygame.K_RIGHT]:
+            if self.ship.rect.x < 700:
+                self.ship.rect.x += self.ship.SHIP_SPEED
 
-    key = pygame.key.get_pressed()
+        if key[pygame.K_SPACE]:
+            press_space_time = pygame.time.get_ticks()
+            time_delta = press_space_time - self.shot_time
+            if time_delta > SHOT_DELAY:
+                missile = ShipMissile()
+                missile.rect.x = self.ship.rect.x + 25
+                missile.rect.y = self.ship.rect.y
+                self.missile_list.add(missile)
 
-    if key[pygame.K_LEFT]:
-        if ship.rect.x > 0:
-            ship.rect.x += -ship.SHIP_SPEED
+                self.shot_time = pygame.time.get_ticks()
 
-    if key[pygame.K_RIGHT]:
-        if ship.rect.x < 700:
-            ship.rect.x += ship.SHIP_SPEED
+    def enemy_shot(self):
+        shoot_chance = random.randint(1, 100)
+        if shoot_chance < 10:
+            if len(self.enemy_list) > 0:
+                random_enemy = random.choice(self.enemy_list.sprites())
+                bomb = EnemyMissile()
+                bomb.rect.x = random_enemy.rect.x + 20
+                bomb.rect.y = random_enemy.rect.y + 40
+                self.bomb_list.add(bomb)
 
-    if key[pygame.K_SPACE]:
-        press_space_time = pygame.time.get_ticks()
-        time_delta = press_space_time - SHOT_TIME
-        if time_delta > SHOT_DELAY:
-            missile = ShipMissile()
-            missile.rect.x = ship.rect.x + 25
-            missile.rect.y = ship.rect.y
-            missile_list.add(missile)
-
-            SHOT_TIME = pygame.time.get_ticks()
-
-    shoot_chance = random.randint(1, 100)
-    if shoot_chance < 10:
-        if len(enemy_list) > 0:
-            random_enemy = random.choice(enemy_list.sprites())
-            bomb = EnemyMissile()
-            bomb.rect.x = random_enemy.rect.x + 20
-            bomb.rect.y = random_enemy.rect.y + 40
-            bomb_list.add(bomb)
-
-    for missile in missile_list:
-        if missile.rect.y < -10:
-            missile_list.remove(missile)
-
-        for enemy in enemy_list:
+    def check_hit_enemy(self, missile):
+        for enemy in self.enemy_list:
             if missile.rect.colliderect(enemy.rect):
-                SCORE += enemy.points
-                missile_list.remove(missile)
-                enemy_list.remove(enemy)
+                self.score += enemy.points
+                self.missile_list.remove(missile)
+                self.enemy_list.remove(enemy)
 
-    for bomb in bomb_list:
-        if bomb.rect.y > 880:
-            bomb_list.remove(bomb)
+    def check_out_of_bounds(self, missile):
+        if missile.rect.y < -10:
+            self.missile_list.remove(missile)
 
-        if bomb.rect.colliderect(ship.rect):
-            bomb_list.remove(bomb)
-            ship.live -= 1
-            # print(ship.live)
+    def check_hit_ship(self, bomb):
+        if bomb.rect.colliderect(self.ship.rect):
+            self.bomb_list.remove(bomb)
+            self.ship.live -= 1
 
-    if ship.live <= 0 or len(enemy_list) == 0:
-        from tkinter import *
-        from tkinter import messagebox
+    def check_end_condition(self):
+        if self.ship.live <= 0 or len(self.enemy_list) == 0:
+            import tkinter
+            from tkinter import messagebox
 
-        root = Tk()
-        root.title("Message Box")
+            root = tkinter.Tk()
+            root.title("Message Box")
 
-
-        def popup():
-            response = messagebox.showinfo("Game over", "You won!\nYour score:{}".format(SCORE), )
-            Label(root, text=response).pack()
+            response = messagebox.showinfo("Game over", "You won!\nYour score:{}".format(self.score), )
+            tkinter.Label(root, text=response).pack()
             # if response == 1:
             #     Label(root,text='You clicked yes').pack()
             # else:
-            #     Label(root, text='You clicked no').pack()
+
+            root.mainloop()
+            # run = False
+            return False
+        return True
 
 
-        popup()
-
-        root.mainloop()
-        run = False
-
-    redraw()
-
-pygame.quit()
+if __name__ == '__main__':
+    pygame.init()
+    window = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption('Space Invaders')
+    programIcon = pygame.image.load('icons/green_alien.png')
+    pygame.display.set_icon(programIcon)
+    Game()
+    pygame.quit()
