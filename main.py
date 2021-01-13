@@ -1,3 +1,5 @@
+"""Module responsible for game functionalitty"""
+
 import random
 from abc import abstractmethod
 
@@ -9,6 +11,7 @@ SHOT_DELAY = 800
 
 
 class Colors:
+    """Set of colors used in game"""
     WHITE = (255, 255, 255)
     GREEN = (0, 255, 0)
     RED = (255, 0, 0)
@@ -17,13 +20,14 @@ class Colors:
 
 
 class SpaceObject(pygame.sprite.Sprite):
-
     @abstractmethod
     def shot(self):
+        """Creates new Missile object"""
         pass
 
 
 class Ship(SpaceObject):
+    """Object controlled by user"""
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.size = [50, 22]
@@ -32,14 +36,16 @@ class Ship(SpaceObject):
         self.rect = self.image.get_rect()
         self.speed = 10
         self.live = 3
-        self.rect.x = WIDTH/2
+        self.rect.x = WIDTH / 2
         self.rect.y = HEIGHT - 60
         self.shot_time = 0
 
     def draw(self):
+        """Creates ship on game area"""
         window.blit(self.image, (self.rect.x, self.rect.y))
 
     def move(self, key):
+        """Changes position of the ship"""
         # key = pygame.key.get_pressed()
         if key[pygame.K_LEFT]:
             if self.rect.x > 0:
@@ -50,13 +56,14 @@ class Ship(SpaceObject):
                 self.rect.x += self.speed
 
     def shot(self):
+        """Creates new ShipMissile object"""
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE]:
             press_space_time = pygame.time.get_ticks()
             time_delta = press_space_time - self.shot_time
             if time_delta > SHOT_DELAY:
                 missile = ShipMissile()
-                missile.rect.x = self.rect.x + self.size[0]/2
+                missile.rect.x = self.rect.x + self.size[0] / 2
                 missile.rect.y = self.rect.y
                 # self.missile_list.add(missile)
                 self.shot_time = pygame.time.get_ticks()
@@ -65,9 +72,10 @@ class Ship(SpaceObject):
 
 
 class Enemy(SpaceObject):
+    """Enemies of the ship"""
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.size = [40,40]
+        self.size = [40, 40]
         self.image = pygame.Surface(self.size)
         self.rect = self.image.get_rect()
         self.group_rect = pygame.Rect(130, 75, 500, 250)
@@ -75,6 +83,7 @@ class Enemy(SpaceObject):
         self.y_speed = 5
 
     def update(self):
+        """Updates position of enemy objects"""
         self.rect.x += self.x_speed
         self.group_rect.x += self.x_speed
         if self.group_rect.x + 500 >= WIDTH or self.group_rect.x < 25:
@@ -82,11 +91,12 @@ class Enemy(SpaceObject):
             self.rect.y += self.y_speed
 
     def shot(self):
+        """Creates new EnemyMissile object"""
         shoot_chance = random.randint(1, 100)
         if shoot_chance < 10:
             bomb = EnemyMissile()
-            bomb.rect.x = self.rect.x + self.size[0]/2
-            bomb.rect.y = self.rect.y + self.size[1]/2
+            bomb.rect.x = self.rect.x + self.size[0] / 2
+            bomb.rect.y = self.rect.y + self.size[1] / 2
             # self.bomb_list.add(bomb)
             return bomb
         return None
@@ -96,6 +106,7 @@ class Enemy(SpaceObject):
 
 
 class GreenEnemy(Enemy):
+    """Type of enemy"""
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load('icons/green_alien.png')
@@ -103,6 +114,7 @@ class GreenEnemy(Enemy):
 
 
 class PinkEnemy(Enemy):
+    """Type of enemy"""
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load('icons/pink_alien.png')
@@ -110,6 +122,7 @@ class PinkEnemy(Enemy):
 
 
 class Missile(pygame.sprite.Sprite):
+    """Object which can collide with enemies or ship"""
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.speed = 10
@@ -118,36 +131,44 @@ class Missile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
     def update(self):
+        """Changes position of missile"""
         self.rect.y += -self.speed
 
     @abstractmethod
     def out_of_bounds(self):
+        """Checks if object is out of game area"""
         pass
 
     def collide(self, space_object):
+        """Checks if missile collide with SpaceObject"""
         return self.rect.colliderect(space_object.rect)
 
 
 class ShipMissile(Missile):
+    """Type of missile which can destroy enemy"""
     def __init__(self):
         super().__init__()
         self.image.fill(Colors.GREEN)
 
     def out_of_bounds(self):
+        """Checks if object is out of game area"""
         return self.rect.y <= -self.size[1]
 
 
 class EnemyMissile(Missile):
+    """Type of missile which can collide with ship"""
     def __init__(self):
         super().__init__()
         self.speed = -self.speed
         self.image.fill(Colors.RED)
 
     def out_of_bounds(self):
+        """Checks if object is out of game area"""
         return self.rect.y >= HEIGHT + self.size[1]
 
 
 class Game:
+    """Supports game area"""
     def __init__(self):
         self.score = 0
         self.ship = Ship()
@@ -157,6 +178,7 @@ class Game:
         self.create_enemies()
 
     def create_enemies(self):
+        """Creates enemies on game area"""
         for row in range(1, ROW // 2 + 1):
             for column in range(1, COLUMN + 1):
                 enemy_green = GreenEnemy()
@@ -169,9 +191,8 @@ class Game:
                 enemy_pink.rect.y = 125 + (50 * row)
                 self.enemy_list.add(enemy_pink)
 
-
-
     def redraw(self):
+        """Updates objects on game area"""
         background_img = pygame.image.load('icons/backgroundv2.png')
         window.blit(background_img, [0, 0])
 
@@ -200,6 +221,7 @@ class Game:
         pygame.display.update()
 
     def play(self):
+        """Runs the game"""
         run = True
         while run:
             pygame.time.delay(10)
@@ -207,7 +229,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
-                elif event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         return
@@ -248,12 +270,13 @@ class Game:
             self.redraw()
 
     def check_end_condition(self):
+        """Checks if the termination condition has been met"""
         if len(self.enemy_list) == 0:
             import tkinter
             from tkinter import messagebox
             root = tkinter.Tk()
             root.title("Message Box")
-            response = messagebox.showinfo("Game over", "You won!\nYour score:{}".format(self.score), )
+            messagebox.showinfo("Game over", "You won!\nYour score:{}".format(self.score), )
             root.quit()
             return False
         if self.ship.live <= 0 or self.enemy_in_ship_area():
@@ -261,12 +284,13 @@ class Game:
             from tkinter import messagebox
             root = tkinter.Tk()
             root.title("Message Box")
-            response = messagebox.showinfo("Game over", "You lose!\nYour score:{}".format(self.score), )
+            messagebox.showinfo("Game over", "You lose!\nYour score:{}".format(self.score), )
             root.quit()
             return False
         return True
 
     def enemy_in_ship_area(self):
+        """Checks if any of enemy reach the ship area"""
         for enemies in self.enemy_list:
             if enemies.rect.y >= HEIGHT - 110:
                 return True
