@@ -39,8 +39,8 @@ class Ship(SpaceObject):
     def draw(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
-    def move(self):
-        key = pygame.key.get_pressed()
+    def move(self, key):
+        # key = pygame.key.get_pressed()
         if key[pygame.K_LEFT]:
             if self.rect.x > 0:
                 self.rect.x += -self.speed
@@ -72,7 +72,7 @@ class Enemy(SpaceObject):
         self.rect = self.image.get_rect()
         self.group_rect = pygame.Rect(130, 75, 500, 250)
         self.x_speed = 5
-        self.y_speed = 10
+        self.y_speed = 5
 
     def update(self):
         self.rect.x += self.x_speed
@@ -134,7 +134,7 @@ class ShipMissile(Missile):
         self.image.fill(Colors.GREEN)
 
     def out_of_bounds(self):
-        return self.rect.y < -self.size[1]
+        return self.rect.y <= -self.size[1]
 
 
 class EnemyMissile(Missile):
@@ -144,7 +144,7 @@ class EnemyMissile(Missile):
         self.image.fill(Colors.RED)
 
     def out_of_bounds(self):
-        return self.rect.y > HEIGHT + self.size[1]
+        return self.rect.y >= HEIGHT + self.size[1]
 
 
 class Game:
@@ -168,6 +168,8 @@ class Game:
                 enemy_pink.rect.x = 80 + (50 * column)
                 enemy_pink.rect.y = 125 + (50 * row)
                 self.enemy_list.add(enemy_pink)
+
+
 
     def redraw(self):
         background_img = pygame.image.load('icons/backgroundv2.png')
@@ -210,7 +212,7 @@ class Game:
                         pygame.quit()
                         return
 
-            self.ship.move()
+            self.ship.move(pygame.key.get_pressed())
 
             random_enemy = random.choice(self.enemy_list.sprites())
             bomb = random_enemy.shot()
@@ -246,23 +248,29 @@ class Game:
             self.redraw()
 
     def check_end_condition(self):
-        if self.ship.live <= 0 or len(self.enemy_list) == 0:
+        if len(self.enemy_list) == 0:
             import tkinter
             from tkinter import messagebox
-
             root = tkinter.Tk()
             root.title("Message Box")
-
             response = messagebox.showinfo("Game over", "You won!\nYour score:{}".format(self.score), )
-            tkinter.Label(root, text=response).pack()
-            # if response == 1:
-            #     Label(root,text='You clicked yes').pack()
-            # else:
-
-            root.mainloop()
-            # run = False
+            root.quit()
+            return False
+        if self.ship.live <= 0 or self.enemy_in_ship_area():
+            import tkinter
+            from tkinter import messagebox
+            root = tkinter.Tk()
+            root.title("Message Box")
+            response = messagebox.showinfo("Game over", "You lose!\nYour score:{}".format(self.score), )
+            root.quit()
             return False
         return True
+
+    def enemy_in_ship_area(self):
+        for enemies in self.enemy_list:
+            if enemies.rect.y >= HEIGHT - 110:
+                return True
+        return False
 
 
 if __name__ == '__main__':
