@@ -43,12 +43,12 @@ class TestEnemy(unittest.TestCase):
 
     def test_update(self):
         self.enemy_green.update()
-        self.assertEqual(self.enemy_green.rect.x, 105)
+        self.assertEqual(self.enemy_green.rect.x, 100+self.enemy_green.x_speed)
 
     def test_shot(self):
         bomb = main.EnemyMissile()
         bomb.rect.x = self.enemy_green.rect.x + self.enemy_green.size[0] / 2
-        bomb.rect.y = self.enemy_green.rect.y + self.enemy_green.size[1] / 2
+        bomb.rect.y = self.enemy_green.rect.y + self.enemy_green.size[1]
 
         while True:
             generated_bomb = self.enemy_green.shot()

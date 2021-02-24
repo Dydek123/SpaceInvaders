@@ -65,7 +65,6 @@ class Ship(SpaceObject):
                 missile = ShipMissile()
                 missile.rect.x = self.rect.x + self.size[0] / 2
                 missile.rect.y = self.rect.y
-                # self.missile_list.add(missile)
                 self.shot_time = pygame.time.get_ticks()
                 return missile
         return None
@@ -96,14 +95,9 @@ class Enemy(SpaceObject):
         if shoot_chance < 10:
             bomb = EnemyMissile()
             bomb.rect.x = self.rect.x + self.size[0] / 2
-            bomb.rect.y = self.rect.y + self.size[1] / 2
-            # self.bomb_list.add(bomb)
+            bomb.rect.y = self.rect.y + self.size[1]
             return bomb
         return None
-
-    # def collide(self, missile):
-    #     return missile.rect.colliderect(self.rect)
-
 
 class GreenEnemy(Enemy):
     """Type of enemy"""
@@ -224,7 +218,7 @@ class Game:
         """Runs the game"""
         run = True
         while run:
-            pygame.time.delay(10)
+            pygame.time.delay(20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
