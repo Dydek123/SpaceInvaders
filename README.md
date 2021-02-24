@@ -22,7 +22,11 @@ Python (PyGame + Tkinter)
 
 ## UML Diagrams
 ### Class diagram 
-![Class](Diagrams/Class_diagram.png)
+<p align="center">
+  <img src="Diagrams/Class_diagram.png" />
+</p>
 ### Use cases diagram (PL 
-![Sequence 1](Diagrams/Sequence_1.png) 
-![Sequence 2](Diagrams/Sequence_2.png) 
+<p align="center">
+  <img src="Diagrams/Sequence_1.png" />
+  <img src="DDiagrams/Sequence_2.png" />
+</p>
