@@ -28,5 +28,5 @@ Python (PyGame + Tkinter)
 ### Use cases diagram (PL 
 <p align="center">
   <img src="Diagrams/Sequence_1.png" />
-  <img src="DDiagrams/Sequence_2.png" />
+  <img src="Diagrams/Sequence_2.png" />
 </p>
