@@ -6,8 +6,8 @@ Created game based on popular [Space Invaders](https://en.wikipedia.org/wiki/Spa
 * [Game](#game)
 * [Specification (PL)](https://github.com/Dydek123/SpaceInvaders/blob/master/Specification.pdf)
 * [UML Diagrams](#uml-diagrams)
-    - [Class diagram](#game)
-    - [Use cases](#game)
+    - [Class diagram](#class-diagram)
+    - [Use cases](#use-cases-diagram-(PL))
 
 
 
@@ -21,7 +21,8 @@ Python (PyGame + Tkinter)
 ### [Specification (PL)](https://github.com/Dydek123/SpaceInvaders/blob/master/Specification.pdf)
 
 ## UML Diagrams
-* **Class diagram** ![Class](Diagrams/Class_diagram.png)
-* **Use cases diagram (PL)** 
+### Class diagram 
+![Class](Diagrams/Class_diagram.png)
+### Use cases diagram (PL 
 ![Sequence 1](Diagrams/Sequence_1.png) 
 ![Sequence 2](Diagrams/Sequence_2.png) 
